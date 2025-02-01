@@ -330,26 +330,27 @@ class ColorPickerState extends State<ColorPicker> {
                     }),
                     child: ColorIndicator(currentHsvColor),
                   ),
-                Expanded(
-                  child: Column(
-                    children: <Widget>[
-                      SizedBox(
-                          height: 40.0,
-                          width: widget.colorPickerWidth - 75.0,
-                          child: sliderByPaletteType()),
-                      if (widget.enableAlpha)
+                if (widget.showPreview)
+                  Expanded(
+                    child: Column(
+                      children: <Widget>[
                         SizedBox(
-                          height: 40.0,
-                          width: widget.colorPickerWidth - 75.0,
-                          child: colorPickerSlider(TrackType.alpha),
-                        ),
-                    ],
+                            height: 40.0,
+                            width: widget.colorPickerWidth - 75.0,
+                            child: sliderByPaletteType()),
+                        if (widget.enableAlpha)
+                          SizedBox(
+                            height: 40.0,
+                            width: widget.colorPickerWidth - 75.0,
+                            child: colorPickerSlider(TrackType.alpha),
+                          ),
+                      ],
+                    ),
                   ),
-                ),
               ],
             ),
           ),
-          if (colorHistory.isNotEmpty)
+          if (colorHistory.isNotEmpty && widget.showPreview)
             SizedBox(
               width: widget.colorPickerWidth,
               height: 50,
