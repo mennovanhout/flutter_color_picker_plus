@@ -1,7 +1,7 @@
 # flutter_colorpicker
 
-[![pub package](https://img.shields.io/pub/v/flutter_colorpicker?include_prereleases.svg "Flutter Color Picker")](https://pub.dev/packages/flutter_color_picker)
-[![badge](https://img.shields.io/badge/%20built%20with-%20%E2%9D%A4-ff69b4.svg "build with love")](https://github.com/mennovanhout/flutter_color_picker)
+[![pub package](https://img.shields.io/pub/v/flutter_color_picker_plus?include_prereleases.svg "Flutter Color Picker")](https://pub.dev/packages/flutter_color_picker)
+[![badge](https://img.shields.io/badge/%20built%20with-%20%E2%9D%A4-ff69b4.svg "build with love")](https://github.com/mennovanhout/flutter_color_picker_plus)
 
 HSV(HSB)/HSL/RGB/Material color picker inspired by all the good design for your amazing flutter apps.  
 Adorable color pickers out of the box with highly customized widgets to all developers' needs.

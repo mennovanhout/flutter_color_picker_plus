@@ -2,8 +2,59 @@
 library;
 
 import 'dart:math';
+
 import 'package:flutter/painting.dart';
+
 import 'colors.dart';
+
+double getValueFromColor(Color color) {
+  const coolWhite =
+      Color.fromARGB(255, 204, 254, 255); // Cool white (bluish-white)
+  const pureWhite = Color.fromARGB(255, 255, 255, 255); // Pure white
+  const warmWhite =
+      Color.fromARGB(255, 255, 217, 128); // Warm white (yellowish-white)
+
+  // Helper function to calculate the interpolation factor (t) for a single channel
+  double calculateT(int channelValue, int startValue, int endValue) {
+    if (startValue == endValue) {
+      return 0.0; // Avoid division by zero
+    }
+    return (channelValue - startValue) / (endValue - startValue);
+  }
+
+  // Check if the color is closer to coolWhite or pureWhite
+  if (color.red >= coolWhite.red &&
+      color.red <= pureWhite.red &&
+      color.green >= coolWhite.green &&
+      color.green <= pureWhite.green &&
+      color.blue >= coolWhite.blue &&
+      color.blue <= pureWhite.blue) {
+    // Interpolate between coolWhite and pureWhite
+    // Use only the red channel for simplicity (since all channels are interpolated similarly)
+    double t = calculateT(color.red, coolWhite.red, pureWhite.red);
+
+    // Map t back to the original value range (0 to 0.5)
+    return t * 0.5;
+  } else if (color.red >= pureWhite.red &&
+      color.red <= warmWhite.red &&
+      color.green <= pureWhite.green &&
+      color.green >= warmWhite.green &&
+      color.blue <= pureWhite.blue &&
+      color.blue >= warmWhite.blue) {
+    // Interpolate between pureWhite and warmWhite
+    // Use only the red channel for simplicity (since all channels are interpolated similarly)
+    double t = calculateT(color.green, pureWhite.green, warmWhite.green);
+
+    // Reverse the easing function (t = pow(t, 2) => t = sqrt(t))
+    t = sqrt(t);
+
+    // Map t back to the original value range (0.5 to 1)
+    return 0.5 + t * 0.5;
+  } else {
+    // If the color is outside the expected ranges, return a default value (e.g., 0.5)
+    return 0.5;
+  }
+}
 
 /// Check if is good condition to use white foreground color by passing
 /// the background color, and optional bias.

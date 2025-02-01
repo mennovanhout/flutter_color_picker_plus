@@ -51,6 +51,7 @@ class _HSVColorPickerExampleState extends State<HSVColorPickerExample> {
   bool _displayThumbColor3 = true;
   bool _showParams = true;
   bool _showIndicator = true;
+  bool _displayPreview = true;
 
   // Picker 4
   final textController = TextEditingController(
@@ -86,6 +87,7 @@ class _HSVColorPickerExampleState extends State<HSVColorPickerExample> {
                           pickerColor: widget.pickerColor,
                           onColorChanged: widget.onColorChanged,
                           colorPickerWidth: 300,
+                          showPreview: _displayPreview,
                           pickerAreaHeightPercent: 0.7,
                           enableAlpha: _enableAlpha,
                           labelTypes: _labelTypes,
@@ -175,6 +177,12 @@ ColorPicker(
           value: _displayThumbColor,
           onChanged: (bool value) =>
               setState(() => _displayThumbColor = !_displayThumbColor),
+        ),
+        SwitchListTile(
+          title: const Text('Display preview'),
+          value: _displayPreview,
+          onChanged: (bool value) =>
+              setState(() => _displayPreview = !_displayPreview),
         ),
         ListTile(
           title: const Text('Palette Type'),

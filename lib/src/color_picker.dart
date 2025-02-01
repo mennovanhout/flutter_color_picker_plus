@@ -38,6 +38,7 @@ class ColorPicker extends StatefulWidget {
     this.hexInputController,
     this.colorHistory,
     this.onHistoryChanged,
+    this.showPreview = true,
   });
 
   final Color pickerColor;
@@ -55,6 +56,7 @@ class ColorPicker extends StatefulWidget {
   final double pickerAreaHeightPercent;
   final BorderRadius pickerAreaBorderRadius;
   final bool hexInputBar;
+  final bool showPreview;
 
   /// Allows setting the color using text input, via [TextEditingController].
   ///
@@ -177,6 +179,7 @@ class ColorPickerState extends State<ColorPicker> {
     currentHsvColor = (widget.pickerHsvColor != null)
         ? widget.pickerHsvColor as HSVColor
         : HSVColor.fromColor(widget.pickerColor);
+
     // If there's no initial text in `hexInputController`,
     if (widget.hexInputController?.text.isEmpty == true) {
       // set it to the current's color HEX value.
@@ -260,8 +263,12 @@ class ColorPickerState extends State<ColorPicker> {
     return ClipRRect(
       borderRadius: widget.pickerAreaBorderRadius,
       child: Padding(
-        padding:
-            EdgeInsets.all(widget.paletteType == PaletteType.hueWheel ? 10 : 0),
+        padding: EdgeInsets.all([
+          PaletteType.hueWheel,
+          PaletteType.temperatureWheel
+        ].contains(widget.paletteType)
+            ? 16
+            : 0),
         child: ColorPickerArea(
             currentHsvColor, onColorChanging, widget.paletteType),
       ),
@@ -307,20 +314,22 @@ class ColorPickerState extends State<ColorPicker> {
             child: colorPicker(),
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(15.0, 5.0, 10.0, 5.0),
+            padding: EdgeInsets.fromLTRB(
+                15.0, 5.0, widget.showPreview ? 10.0 : 0, 5.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                GestureDetector(
-                  onTap: () => setState(() {
-                    if (widget.onHistoryChanged != null &&
-                        !colorHistory.contains(currentHsvColor.toColor())) {
-                      colorHistory.add(currentHsvColor.toColor());
-                      widget.onHistoryChanged!(colorHistory);
-                    }
-                  }),
-                  child: ColorIndicator(currentHsvColor),
-                ),
+                if (widget.showPreview)
+                  GestureDetector(
+                    onTap: () => setState(() {
+                      if (widget.onHistoryChanged != null &&
+                          !colorHistory.contains(currentHsvColor.toColor())) {
+                        colorHistory.add(currentHsvColor.toColor());
+                        widget.onHistoryChanged!(colorHistory);
+                      }
+                    }),
+                    child: ColorIndicator(currentHsvColor),
+                  ),
                 Expanded(
                   child: Column(
                     children: <Widget>[

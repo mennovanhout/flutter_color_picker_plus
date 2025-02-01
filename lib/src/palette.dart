@@ -25,6 +25,7 @@ enum PaletteType {
   rgbWithGreen,
   rgbWithRed,
   hueWheel,
+  temperatureWheel,
 }
 
 /// Track types for slider picker.
@@ -549,6 +550,59 @@ class HUEColorWheelPainter extends CustomPainter {
             (useWhiteForeground(hsvColor.toColor())
                 ? Colors.white
                 : Colors.black)
+        ..strokeWidth = 1.5
+        ..style = PaintingStyle.stroke,
+    );
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) => false;
+}
+
+/// Painter for temperature wheel
+class TemperatureWheelPainter extends CustomPainter {
+  const TemperatureWheelPainter(this.hsvColor, {this.pointerColor});
+
+  final HSVColor hsvColor;
+  final Color? pointerColor;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    Rect rect = Offset.zero & size;
+    Offset center = Offset(size.width / 2, size.height / 2);
+    double radio = size.width <= size.height ? size.width / 2 : size.height / 2;
+    double value = getValueFromColor(hsvColor.toColor());
+
+    const List<Color> colors = [
+      Color.fromARGB(255, 204, 254, 255),
+      Color.fromARGB(255, 255, 255, 255),
+      Color.fromARGB(255, 255, 255, 255),
+      Color.fromARGB(255, 255, 217, 128),
+    ];
+    const Gradient gradientS = LinearGradient(
+        colors: colors,
+        stops: [
+          0.0,
+          0.5,
+          0.5,
+          1.0,
+        ],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter);
+
+    canvas.drawCircle(
+        center, radio, Paint()..shader = gradientS.createShader(rect));
+    canvas.drawCircle(center, radio,
+        Paint()..color = Colors.black.withOpacity(1 - hsvColor.value));
+
+    canvas.drawCircle(
+      Offset(
+        center.dx,
+        size.height * value,
+      ),
+      size.height * 0.04,
+      Paint()
+        ..color = pointerColor ?? Colors.grey[600]!
         ..strokeWidth = 1.5
         ..style = PaintingStyle.stroke,
     );
@@ -1333,6 +1387,40 @@ class ColorPickerArea extends StatelessWidget {
     onColorChanged(hsvColor.withHue(hue).withSaturation(radio));
   }
 
+  void _handleTemperatureWheelChange(double value) {
+    const coolWhite =
+        Color.fromARGB(255, 204, 254, 255); // Cool white (bluish-white)
+    const pureWhite = Color.fromARGB(255, 255, 255, 255); // Pure white
+    const warmWhite =
+        Color.fromARGB(255, 255, 217, 128); // Warm white (yellowish-white)
+
+    Color color;
+
+    if (value <= 0.5) {
+      // Interpolate between Cool White and Pure White
+      double t = value / 0.5; // Normalize to 0-1 for this range
+      color = Color.fromARGB(
+        255,
+        (coolWhite.red + (pureWhite.red - coolWhite.red) * t).round(),
+        (coolWhite.green + (pureWhite.green - coolWhite.green) * t).round(),
+        (coolWhite.blue + (pureWhite.blue - coolWhite.blue) * t).round(),
+      );
+    } else {
+      // Interpolate between Pure White and Warm White with bias
+      double t = (value - 0.5) / 0.5; // Normalize to 0-1 for this range
+      t = pow(t, 2).toDouble(); // Apply easing to bias toward white
+
+      color = Color.fromARGB(
+        255,
+        (pureWhite.red + (warmWhite.red - pureWhite.red) * t).round(),
+        (pureWhite.green + (warmWhite.green - pureWhite.green) * t).round(),
+        (pureWhite.blue + (warmWhite.blue - pureWhite.blue) * t).round(),
+      );
+    }
+
+    onColorChanged(HSVColor.fromColor(color));
+  }
+
   void _handleGesture(
       Offset position, BuildContext context, double height, double width) {
     RenderBox? getBox = context.findRenderObject() as RenderBox?;
@@ -1342,7 +1430,8 @@ class ColorPickerArea extends StatelessWidget {
     double horizontal = localOffset.dx.clamp(0.0, width);
     double vertical = localOffset.dy.clamp(0.0, height);
 
-    if (paletteType == PaletteType.hueWheel) {
+    if (paletteType == PaletteType.hueWheel ||
+        paletteType == PaletteType.temperatureWheel) {
       Offset center = Offset(width / 2, height / 2);
       double radio = width <= height ? width / 2 : height / 2;
       double dist =
@@ -1352,8 +1441,13 @@ class ColorPickerArea extends StatelessWidget {
           (atan2(horizontal - center.dx, vertical - center.dy) / pi + 1) /
               2 *
               360;
-      _handleColorWheelChange(
-          ((rad + 90) % 360).clamp(0, 360), dist.clamp(0, 1));
+
+      if (paletteType == PaletteType.temperatureWheel) {
+        _handleTemperatureWheelChange(vertical / height);
+      } else {
+        _handleColorWheelChange(
+            ((rad + 90) % 360).clamp(0, 360), dist.clamp(0, 1));
+      }
     } else {
       _handleColorRectChange(horizontal / width, 1 - vertical / height);
     }
@@ -1416,8 +1510,9 @@ class ColorPickerArea extends StatelessWidget {
                       painter: RGBWithBlueColorPainter(hsvColor.toColor()));
                 case PaletteType.hueWheel:
                   return CustomPaint(painter: HUEColorWheelPainter(hsvColor));
-                default:
-                  return const CustomPaint();
+                case PaletteType.temperatureWheel:
+                  return CustomPaint(
+                      painter: TemperatureWheelPainter(hsvColor));
               }
             },
           ),

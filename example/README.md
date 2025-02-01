@@ -1,1 +1,1 @@
-# flutter_colorpicker example project
+# flutter_color_picker_plus example project
